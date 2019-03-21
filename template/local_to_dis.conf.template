@@ -1,0 +1,19 @@
+input
+{
+   file {
+       path => ["/tmp/test.log"]
+       type => "log4j"
+       start_position => "beginning"
+   }
+}
+output
+{
+    dis {
+        stream => ["YOU_DIS_STREAM_NAME"]
+        endpoint => "https://dis.cn-north-1.myhuaweicloud.com:20004"
+        ak => "YOU_ACCESS_KEY_ID"
+        sk => "YOU_SECRET_KEY_ID"
+        region => "cn-north-1"
+        project_id => "YOU_PROJECT_ID"
+    }
+}
