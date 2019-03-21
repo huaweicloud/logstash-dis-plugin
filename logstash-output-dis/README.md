@@ -41,7 +41,7 @@ output
 {
    dis {
         stream => ["YOU_DIS_STREAM_NAME"]
-        endpoint => "https://dis.cn-north-1.myhuaweicloud.com:20004"
+        endpoint => "https://dis.cn-north-1.myhuaweicloud.com"
         ak => "YOU_ACCESS_KEY_ID"
         sk => "YOU_SECRET_KEY_ID"
         region => "cn-north-1"
@@ -59,12 +59,12 @@ output
 
 | Name                     | Description                              | Default                                  |
 | :----------------------- | :--------------------------------------- | :--------------------------------------- |
-| stream                   | The DIS stream to produce messages to    | -                                        |
-| ak                       | The Access Key ID for hwclouds, it can be obtained from **My Credential** Page | -                                        |
-| sk                       | The Secret Key ID for hwclouds, it can be obtained from **My Credential** Page | -                                        |
-| region                   | Specifies use which region of DIS, now DIS only support `cn-north-1` | cn-north-1                               |
-| project_id               | The ProjectId of the specified region, it can be obtained from **My Credential** Page | -                                        |
-| endpoint                 | DIS endpoint                       | https://dis.cn-north-1.myhuaweicloud.com:20004 |
+| stream                   | 指定在DIS服务上创建的通道名称。             | -                                        |
+| ak                       | 用户的Access Key，可从华为云控制台“我的凭证”页获取。 | -                                        |
+| sk                       | 用户的Secret Key，可从华为云控制台“我的凭证”页获取。 | -                                        |
+| region                   | 将数据上传到指定Region的DIS服务。           | cn-north-1                               |
+| project_id               | 用户所属区域的项目ID，可从华为云控制台“我的凭证”页获取。                    | -                                        |
+| endpoint                 | DIS对应Region的数据接口地址。               | https://dis.cn-north-1.myhuaweicloud.com |
 
 ## License
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)
