@@ -3,7 +3,7 @@
 DIS Logstash Plugin是数据接入服务（DIS）为Logstash开发的插件，包含DIS Input与DIS Output。DIS Input用于从DIS服务下载数据到Logstash，DIS Output用于将Logstash中的数据上传到DIS服务。
 
 ## 一、安装插件
-### 1.1 下载编译好的DIS Logstash Plugin安装包，[地址](https://dis-publish.obs-website.cn-north-1.myhwclouds.com/dis-logstash-plugins-1.0.0.zip)
+### 1.1 下载编译好的DIS Logstash Plugin安装包，[地址](https://dis-publish.obs-website.cn-north-1.myhwclouds.com/dis-logstash-plugins-1.1.0.zip)
 ### 1.2. 使用PuTTY工具(或其他终端工具)远程登录Logstash服务器
 ### 1.3. 进入到Logstash的安装目录
 ```console
