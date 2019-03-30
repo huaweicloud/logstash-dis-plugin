@@ -2,13 +2,12 @@ input
 {
    dis {
         streams => ["YOU_DIS_STREAM_NAME"]
-        endpoint => "https://dis.cn-north-1.myhuaweicloud.com:20004"
+        endpoint => "https://dis.cn-north-1.myhuaweicloud.com"
         ak => "YOU_ACCESS_KEY_ID"
         sk => "YOU_SECRET_KEY_ID"
         region => "cn-north-1"
         project_id => "YOU_PROJECT_ID"
         group_id => "YOU_APP_ID"
-        decorate_events => true
         auto_offset_reset => "earliest"
     }
 }
