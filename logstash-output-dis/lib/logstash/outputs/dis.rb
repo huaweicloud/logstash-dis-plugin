@@ -50,6 +50,8 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
   config :backoff_max_interval_ms, :validate => :number, :default => 30000
   config :max_in_flight_requests_per_connection, :validate => :number, :default => 50
   config :records_retriable_error_code, :validate => :string, :default => "DIS.4303,DIS.5"
+  config :order_by_partition, :validate => :boolean, :default => false
+  config :metadata_timeout_ms, :validate => :number, :default => 600000
   # The key for the message
   config :message_key, :validate => :string
   config :partition_id, :validate => :string
@@ -219,20 +221,15 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
   def write_to_dis(event, serialized_data)
     stream = event.get("stream");
 	if stream.nil?
-	  logger.info("stream is nil.");
 	  stream = @stream;
 	end
 
 	message_key = event.get("partition_key");
 	if message_key.nil?
-	  logger.info("partition_key is nil.")
 	  message_key = @message_key;
 	end
 
 	partition_id = event.get("partition_id");
-	if partition_id.nil?
-	  logger.info("partition_id is nil.")
-	end
 
 	if message_key.nil? && partition_id.nil?
 	  # record = ProducerRecord.new(event.sprintf(@stream), serialized_data)
@@ -280,6 +277,8 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
       props.put("backoff.max.interval.ms", backoff_max_interval_ms.to_s)
       props.put("max.in.flight.requests.per.connection", max_in_flight_requests_per_connection.to_s)
       props.put("records.retriable.error.code", records_retriable_error_code) unless records_retriable_error_code.nil?
+      props.put("order.by.partition", order_by_partition.to_s)
+      props.put("metadata.timeout.ms", metadata_timeout_ms.to_s)
       # props.put(kafka::RETRIES_CONFIG, retries.to_s) unless retries.nil?
       # props.put(kafka::RETRY_BACKOFF_MS_CONFIG, retry_backoff_ms.to_s)
       props.put("key.deserializer", "com.huaweicloud.dis.adapter.kafka.common.serialization.StringDeserializer") 
