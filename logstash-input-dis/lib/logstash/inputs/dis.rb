@@ -60,13 +60,13 @@ class LogStash::Inputs::Dis < LogStash::Inputs::Base
   # Specifies use which region of DIS, now DIS only support cn-north-1
   config :region, :validate => :string, :default => "cn-north-1"
   # The Access Key ID for hwclouds, it can be obtained from My Credential Page
-  config :ak, :validate => :string
+  config :ak, :validate => :string, :required => true
   # The Secret key ID is encrypted or not
   config :is_sk_encrypted, :default => false
   # The encrypt key used to encypt the Secret Key Id
   config :encrypt_key, :validate => :string
   # The Secret Key ID for hwclouds, it can be obtained from My Credential Page
-  config :sk, :validate => :string
+  config :sk, :validate => :string, :required => true
   # A topic regex pattern to subscribe to. 
   # The topics configuration will be ignored when using this configuration.
   config :topics_pattern, :validate => :string

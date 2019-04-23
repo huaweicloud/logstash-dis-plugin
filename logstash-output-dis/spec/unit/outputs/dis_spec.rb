@@ -1,74 +1,59 @@
 # encoding: utf-8
 require "logstash/devutils/rspec/spec_helper"
-require 'logstash/outputs/kafka'
+require 'logstash/outputs/dis'
 require 'json'
 
-describe "outputs/kafka" do
-  let (:simple_kafka_config) {{'topic_id' => 'test'}}
-  let (:event) { LogStash::Event.new({'message' => 'hello', 'topic_name' => 'my_topic', 'host' => '172.0.0.1',
+describe "outputs/dis" do
+  let (:simple_dis_config) {{'stream' => 'test', 'project_id' => 'test_project_id', 'ak' => 'test_ak', 'sk' => 'test_sk'}}
+  let (:event) { LogStash::Event.new({'message' => 'hello', 'stream_name' => 'my_stream', 'host' => '127.0.0.1',
                                       '@timestamp' => LogStash::Timestamp.now}) }
 
   context 'when initializing' do
     it "should register" do
-      output = LogStash::Plugin.lookup("output", "kafka").new(simple_kafka_config)
+      output = LogStash::Plugin.lookup("output", "dis").new(simple_dis_config)
       expect {output.register}.to_not raise_error
     end
 
-    it 'should populate kafka config with default values' do
-      kafka = LogStash::Outputs::Kafka.new(simple_kafka_config)
-      insist {kafka.bootstrap_servers} == 'localhost:9092'
-      insist {kafka.topic_id} == 'test'
-      insist {kafka.key_serializer} == 'org.apache.kafka.common.serialization.StringSerializer'
+    it 'should populate dis config with default values' do
+      dis = LogStash::Outputs::Dis.new(simple_dis_config)
+      insist {dis.endpoint} == 'https://dis.cn-north-1.myhuaweicloud.com'
+      insist {dis.stream} == 'test'
+      insist {dis.key_serializer} == 'com.huaweicloud.dis.adapter.kafka.common.serialization.StringSerializer'
     end
   end
 
   context 'when outputting messages' do
-    it 'should send logstash event to kafka broker' do
-      expect_any_instance_of(org.apache.kafka.clients.producer.KafkaProducer).to receive(:send)
-        .with(an_instance_of(org.apache.kafka.clients.producer.ProducerRecord)).and_call_original
-      kafka = LogStash::Outputs::Kafka.new(simple_kafka_config)
-      kafka.register
-      kafka.multi_receive([event])
-    end
+    #it 'should send logstash event to DIS' do
+      #expect_any_instance_of(com.huaweicloud.dis.adapter.kafka.clients.producer.DISKafkaProducer).to receive(:send)
+        #.with(an_instance_of(com.huaweicloud.dis.adapter.kafka.clients.producer.ProducerRecord)).and_call_original
+      #dis = LogStash::Outputs::Dis.new(simple_dis_config)
+      #dis.register
+      #dis.multi_receive([event])
+    #end
 
-    it 'should support Event#sprintf placeholders in topic_id' do
-      topic_field = 'topic_name'
-      expect(org.apache.kafka.clients.producer.ProducerRecord).to receive(:new)
-        .with("my_topic", event.to_s).and_call_original
-      expect_any_instance_of(org.apache.kafka.clients.producer.KafkaProducer).to receive(:send).and_call_original
-      kafka = LogStash::Outputs::Kafka.new({'topic_id' => "%{#{topic_field}}"})
-      kafka.register
-      kafka.multi_receive([event])
-    end
-
-    it 'should support field referenced message_keys' do
-      expect(org.apache.kafka.clients.producer.ProducerRecord).to receive(:new)
-        .with("test", "172.0.0.1", event.to_s).and_call_original
-      expect_any_instance_of(org.apache.kafka.clients.producer.KafkaProducer).to receive(:send).and_call_original
-      kafka = LogStash::Outputs::Kafka.new(simple_kafka_config.merge({"message_key" => "%{host}"}))
-      kafka.register
-      kafka.multi_receive([event])
-    end
-    
-    it 'should raise config error when truststore location is not set and ssl is enabled' do
-      kafka = LogStash::Outputs::Kafka.new(simple_kafka_config.merge("security_protocol" => "SSL"))
-      expect { kafka.register }.to raise_error(LogStash::ConfigurationError, /ssl_truststore_location must be set when SSL is enabled/)
-    end
+    #it 'should support field referenced message_keys' do
+      #expect(com.huaweicloud.dis.adapter.kafka.clients.producer.ProducerRecord).to receive(:new)
+        #.with("test", "127.0.0.1", event.to_s).and_call_original
+      #expect_any_instance_of(com.huaweicloud.dis.adapter.kafka.clients.producer.DISKafkaProducer).to receive(:send).and_call_original
+      #dis = LogStash::Outputs::Dis.new(simple_dis_config.merge({"message_key" => "%{host}"}))
+      #dis.register
+      #dis.multi_receive([event])
+    #end
   end
   
-  context "when KafkaProducer#send() raises an exception" do
+  context "when DISKafkaProducer#send() raises an exception" do
     let(:failcount) { (rand * 10).to_i }
     let(:sendcount) { failcount + 1 }
 
     let(:exception_classes) { [
-      org.apache.kafka.common.errors.TimeoutException,
-      org.apache.kafka.common.errors.InterruptException,
-      org.apache.kafka.common.errors.SerializationException
+      com.huaweicloud.dis.adapter.kafka.common.errors.TimeoutException,
+      com.huaweicloud.dis.adapter.kafka.common.errors.InterruptException,
+      com.huaweicloud.dis.adapter.kafka.common.errors.SerializationException 
     ] }
 
     before do
       count = 0
-      expect_any_instance_of(org.apache.kafka.clients.producer.KafkaProducer).to receive(:send)
+      expect_any_instance_of(com.huaweicloud.dis.adapter.kafka.clients.producer.DISKafkaProducer).to receive(:send)
         .exactly(sendcount).times
         .and_wrap_original do |m, *args|
         if count < failcount # fail 'failcount' times in a row.
@@ -76,15 +61,15 @@ describe "outputs/kafka" do
           # Pick an exception at random
           raise exception_classes.shuffle.first.new("injected exception for testing")
         else
-          m.call(*args) # call original
+          #m.call(*args) # call original
         end
       end
     end
 
     it "should retry until successful" do
-      kafka = LogStash::Outputs::Kafka.new(simple_kafka_config)
-      kafka.register
-      kafka.multi_receive([event])
+      dis = LogStash::Outputs::Dis.new(simple_dis_config)
+      dis.register
+      dis.multi_receive([event])
     end
   end
 
@@ -93,30 +78,31 @@ describe "outputs/kafka" do
       # Fail this many times and then finally succeed.
       let(:failcount) { (rand * 10).to_i }
 
-      # Expect KafkaProducer.send() to get called again after every failure, plus the successful one.
+      # Expect DISKafkaProducer.send() to get called again after every failure, plus the successful one.
       let(:sendcount) { failcount + 1 }
+
 
       it "should retry until successful" do
         count = 0;
 
-        expect_any_instance_of(org.apache.kafka.clients.producer.KafkaProducer).to receive(:send)
+        expect_any_instance_of(com.huaweicloud.dis.adapter.kafka.clients.producer.DISKafkaProducer).to receive(:send)
               .exactly(sendcount).times
               .and_wrap_original do |m, *args|
           if count < failcount
             count += 1
             # inject some failures.
 
-            # Return a custom Future that will raise an exception to simulate a Kafka send() problem.
+            # Return a custom Future that will raise an exception to simulate a DIS send() problem.
             future = java.util.concurrent.FutureTask.new { raise "Failed" }
             future.run
             future
           else
-            m.call(*args)
+            #m.call(*args)
           end
         end
-        kafka = LogStash::Outputs::Kafka.new(simple_kafka_config)
-        kafka.register
-        kafka.multi_receive([event])
+        dis = LogStash::Outputs::Dis.new(simple_dis_config)
+        dis.register
+        dis.multi_receive([event])
       end
     end
 
@@ -125,7 +111,7 @@ describe "outputs/kafka" do
       let(:max_sends) { retries + 1 }
 
       it "should give up after retries are exhausted" do
-        expect_any_instance_of(org.apache.kafka.clients.producer.KafkaProducer).to receive(:send)
+        expect_any_instance_of(com.huaweicloud.dis.adapter.kafka.clients.producer.DISKafkaProducer).to receive(:send)
               .at_most(max_sends).times
               .and_wrap_original do |m, *args|
           # Always fail.
@@ -133,9 +119,9 @@ describe "outputs/kafka" do
           future.run
           future
         end
-        kafka = LogStash::Outputs::Kafka.new(simple_kafka_config.merge("retries" => retries))
-        kafka.register
-        kafka.multi_receive([event])
+        dis = LogStash::Outputs::Dis.new(simple_dis_config.merge("retries" => retries))
+        dis.register
+        dis.multi_receive([event])
       end
     end
   end

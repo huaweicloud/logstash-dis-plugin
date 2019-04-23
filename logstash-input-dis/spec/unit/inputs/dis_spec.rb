@@ -16,7 +16,7 @@ class MockConsumer
       raise org.apache.kafka.common.errors.WakeupException.new
     else
       10.times.map do
-        org.apache.kafka.clients.consumer.ConsumerRecord.new("logstash", 0, 0, "key", "value")
+        com.huaweicloud.dis.adapter.kafka.clients.consumer.ConsumerRecord.new("logstash", 0, 0, "key", "value")
       end
     end
   end
@@ -30,7 +30,7 @@ class MockConsumer
 end
 
 describe LogStash::Inputs::Dis do
-  let(:config) { { 'topics' => ['logstash'], 'consumer_threads' => 4 } }
+  let(:config) { { 'streams' => ['logstash'], 'project_id' => 'test_project_id', 'ak' => 'test_ak', 'sk' => 'test_sk' } }
   subject { LogStash::Inputs::Dis.new(config) }
 
   it "should register" do

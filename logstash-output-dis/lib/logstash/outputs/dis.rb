@@ -88,13 +88,13 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
   # Specifies use which region of DIS, now DIS only support cn-north-1
   config :region, :validate => :string, :default => "cn-north-1"
   # The Access Key ID for hwclouds, it can be obtained from My Credential Page
-  config :ak, :validate => :string
+  config :ak, :validate => :string, :required => true
   # The Secret key ID is encrypted or not
   config :is_sk_encrypted, :default => false
   # The encrypt key used to encypt the Secret Key Id
   config :encrypt_key, :validate => :string
   # The Secret Key ID for hwclouds, it can be obtained from My Credential Page
-  config :sk, :validate => :string
+  config :sk, :validate => :string, :required => true
   # Serializer class for the key of the message
   config :key_serializer, :validate => :string, :default => 'com.huaweicloud.dis.adapter.kafka.common.serialization.StringSerializer'
   # Serializer class for the value of the message
