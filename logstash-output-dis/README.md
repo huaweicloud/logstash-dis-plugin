@@ -9,15 +9,11 @@ To get started using this plugin, you will need three things:
 1. JDK 1.8 +
 2. JRuby with the Bundler gem installed, 9.0.0.0 +
 3. Maven
-4. Logstash, 6.0.0 to 6.1.0
+4. Logstash
 
 ## Installation
-当前插件未发布到`RubyGems.org`，无法直接从`RubyGems.org`安装插件，只能从本地安装。
 ### 0. 修改 RubyGems 镜像地址
-    gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/
-
-### 0. 安装 dis-kafka-adapter
-
+    gem sources --add https://gems.ruby-china.com/ --remove https://rubygems.org/
 
 ### 1. 安装 JRuby
 ### 2. 安装 Bundler gem
