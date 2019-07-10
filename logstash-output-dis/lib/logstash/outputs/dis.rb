@@ -25,11 +25,13 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
   config :proxy_workstation, :validate => :string
   config :proxy_domain, :validate => :string
   config :proxy_non_proxy_hosts, :validate => :string
+  config :body_compress_enabled, :validate => :boolean
+  config :body_compress_type, :validate => :string
 
   # The producer will attempt to batch records together into fewer requests whenever multiple
   # records are being sent to the same partition. This helps performance on both the client
   # and the server. This configuration controls the default batch size in bytes.
-  config :batch_size, :validate => :number, :default => 16384
+  config :batch_size, :validate => :number, :default => 1048576
   config :batch_count, :validate => :number, :default => 5000
 
   # The total bytes of memory the producer can use to buffer records waiting to be sent to the server.
@@ -51,6 +53,7 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
   config :max_in_flight_requests_per_connection, :validate => :number, :default => 50
   config :records_retriable_error_code, :validate => :string, :default => "DIS.4303,DIS.5"
   config :order_by_partition, :validate => :boolean, :default => false
+  config :body_serialize_type, :validate => :string, :default => "protobuf"
   config :metadata_timeout_ms, :validate => :number, :default => 600000
   # The key for the message
   config :message_key, :validate => :string
@@ -189,25 +192,8 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
         end
       end.compact
 
-      futures.each_with_index do |future, i|
-        begin
-          result = future.get()
-        rescue => e
-          # TODO(sissel): Add metric to count failures, possibly by exception type.
-          logger.warn("KafkaProducer.send() failed: #{e}", :exception => e)
-          failures << batch[i]
-        end
-      end
+      break
 
-      # No failures? Cool. Let's move on.
-      break if failures.empty?
-
-      # Otherwise, retry with any failed transmissions
-      batch = failures
-      delay = @retry_backoff_ms / 1000.0
-      logger.info("Sending batch to DIS failed. Will retry after a delay.", :batch_size => batch.size,
-                  :failures => failures.size, :sleep => delay);
-      sleep(delay)
     end
 
   end
@@ -244,6 +230,8 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
 	prepare(record)
   rescue LogStash::ShutdownSignal
     @logger.debug('DIS Kafka producer got shutdown signal')
+    # sleep for 5 second to guaranteed data transmission is completed
+    sleep(5)
   rescue => e
     @logger.warn('DIS kafka producer threw exception, restarting',
                  :exception => e)
@@ -277,7 +265,10 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
       props.put("backoff.max.interval.ms", backoff_max_interval_ms.to_s)
       props.put("max.in.flight.requests.per.connection", max_in_flight_requests_per_connection.to_s)
       props.put("records.retriable.error.code", records_retriable_error_code) unless records_retriable_error_code.nil?
+      props.put("body.compress.enabled", body_compress_enabled.to_s) unless body_compress_enabled.nil?
+      props.put("body.compress.type", body_compress_type.to_s) unless body_compress_type.nil?
       props.put("order.by.partition", order_by_partition.to_s)
+      props.put("body.serialize.type", body_serialize_type.to_s)
       props.put("metadata.timeout.ms", metadata_timeout_ms.to_s)
       # props.put(kafka::RETRIES_CONFIG, retries.to_s) unless retries.nil?
       # props.put(kafka::RETRY_BACKOFF_MS_CONFIG, retry_backoff_ms.to_s)
