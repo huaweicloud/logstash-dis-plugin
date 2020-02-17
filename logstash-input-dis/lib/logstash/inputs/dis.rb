@@ -138,8 +138,6 @@ class LogStash::Inputs::Dis < LogStash::Inputs::Base
             consumer.commitSync
           end
         end
-      rescue org.apache.kafka.common.errors.WakeupException => e
-        raise e if !stop?
       ensure
         consumer.close
       end

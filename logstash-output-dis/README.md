@@ -7,7 +7,7 @@ This is a plugin for [Logstash](https://github.com/elastic/logstash). It will se
 To get started using this plugin, you will need three things:
 
 1. JDK 1.8 +
-2. JRuby with the Bundler gem installed, 9.0.0.0 +
+2. JRuby with the Bundler gem installed, 9.0.0.0 ~ 9.2.0.0
 3. Maven
 4. Logstash
 

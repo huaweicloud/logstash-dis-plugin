@@ -45,7 +45,7 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
   # rather than immediately sending out a record the producer will wait for up to the given delay
   # to allow other records to be sent so that the sends can be batched together.
   config :linger_ms, :validate => :number, :default => 50
-  config :block_on_buffer_full, :validate => :boolean, :default => false
+  config :block_on_buffer_full, :validate => :boolean, :default => true
   # block time when buffer is full
   config :max_block_ms, :validate => :number, :default => 60000
   # max wait time in single backoff
@@ -172,22 +172,15 @@ class LogStash::Outputs::Dis < LogStash::Outputs::Base
         remaining -= 1
       end
 
-      failures = []
-
       futures = batch.collect do |record| 
         begin
           # send() can throw an exception even before the future is created.
           @producer.send(record)
-        rescue org.apache.kafka.common.errors.TimeoutException => e
-          failures << record
-          nil
-        rescue org.apache.kafka.common.errors.InterruptException => e
-          failures << record
+        rescue com.huaweicloud.dis.adapter.kafka.common.errors.InterruptException => e
           nil
         rescue com.huaweicloud.dis.adapter.kafka.common.errors.SerializationException => e
           # TODO(sissel): Retrying will fail because the data itself has a problem serializing.
           # TODO(sissel): Let's add DLQ here.
-          failures << record
           nil
         end
       end.compact
